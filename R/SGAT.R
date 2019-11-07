@@ -552,7 +552,7 @@ twilightPairs <- function(twilight,rise) {
 ##' \item{\code{x}}{a two column matrix of (lon,lat) locations.}
 ##' @seealso \code{\link{zenith}}
 ##' @export
-thresholdEstimate <- function(trise,tset,zenith=96,tol=0) {
+thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
   date.sr <- as.POSIXct(trise,origin = "1970-01-01",tz = "GMT")
   date.ss <- as.POSIXct(tset,origin = "1970-01-01",tz = "GMT")
   mon.sr <- format(date.sr,"%b")
@@ -598,7 +598,7 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=0) {
 
 ##' @rdname thresholdEstimate
 ##' @export
-thresholdLocation <- function(twilight,rise,zenith=96,tol=0.08) {
+thresholdLocation <- function(twilight,rise,zenith=96,tol=c(0.08,0.08)) {
   ## Convert to sunrise/sunset pairs
   pr <- twilightPairs(twilight,rise)
   ## Estimate locations
@@ -612,7 +612,7 @@ thresholdLocation <- function(twilight,rise,zenith=96,tol=0.08) {
 ##' @rdname thresholdEstimate
 ##' @importFrom stats approx
 ##' @export
-thresholdPath <- function(twilight,rise,time=twilight,zenith=96,tol=0.08,unfold=TRUE) {
+thresholdPath <- function(twilight,rise,time=twilight,zenith=96,tol=c(0.08,0.08),unfold=TRUE) {
   ## Estimate locations
   ls <- thresholdLocation(twilight,rise,zenith=zenith,tol=tol)
   if(!is.null(time)) {
