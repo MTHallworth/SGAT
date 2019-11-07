@@ -542,7 +542,8 @@ twilightPairs <- function(twilight,rise) {
 ##' @param rise logical vector indicating which twilights are sunrise.
 ##' @param time times for which locations are required.
 ##' @param zenith the solar zenith angle that defines twilight.
-##' @param tol tolerance on the sine of the solar declination.
+##' @param tol tolerance on the sine of the solar declination. \code{tol} can 
+##' accept two values one value for each equinox period c(Sept value,Mar value). 
 ##' @param unfold if \code{TRUE}, unfold longitudes across the dateline.
 ##' @return \code{thresholdEstimate} returns estimated locations as a
 ##' two column (lon,lat) matrix.  \code{thresholdLocation} and
@@ -552,6 +553,10 @@ twilightPairs <- function(twilight,rise) {
 ##' @seealso \code{\link{zenith}}
 ##' @export
 thresholdEstimate <- function(trise,tset,zenith=96,tol=0) {
+  date.sr <- as.POSIXct(trise,origin = "1970-01-01",tz = "GMT")
+  date.ss <- as.POSIXct(tset,origin = "1970-01-01",tz = "GMT")
+  mon.sr <- format(date.sr,"%b")
+  mon.ss <- format(date.ss,"%b")
   rad <- pi/180
   sr <- solar(trise)
   ss <- solar(tset)
@@ -564,14 +569,26 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=0) {
   a <- sr$sinSolarDec
   b <- sr$cosSolarDec*cos(rad*hourAngle)
   x <- (a*cosz-sign(a)*b*suppressWarnings(sqrt(a^2+b^2-cosz^2)))/(a^2+b^2)
-  lat1 <- ifelse(abs(a)>tol,asin(x)/rad,NA)
+  if(length(tol) == 2){
+  AutumnalEquinox <- mon.sr %in% c("Jul","Aug","Sep","Oct","Nov")
+  VernalEquinox <- mon.sr %in% c("Jan","Feb","Mar","Apr","May")
+  lat1[AutumnalEquinox] <- ifelse(abs(a[AutumnalEquinox])>tol[1],asin(x[AutumnalEquinox])/rad,NA)
+  lat1[VernalEquinox] <- ifelse(abs(a[VernalEquinox])>tol[2],asin(x[VernalEquinox])/rad,NA)
+  }else{
+  lat1 <- ifelse(abs(a)>tol,asin(x)/rad,NA)} 
 
   ## Compute latitude from sunset
   hourAngle <- ss$solarTime+lon-180
   a <- ss$sinSolarDec
   b <- ss$cosSolarDec*cos(rad*hourAngle)
   x <- (a*cosz-sign(a)*b*suppressWarnings(sqrt(a^2+b^2-cosz^2)))/(a^2+b^2)
-  lat2 <- ifelse(abs(a)>tol,asin(x)/rad,NA)
+  if(length(tol) == 2){
+  AutumnalEquinox <- mon.sr %in% c("Jul","Aug","Sep","Oct","Nov")
+  VernalEquinox <- mon.sr %in% c("Jan","Feb","Mar","Apr","May")
+  lat2[AutumnalEquinox] <- ifelse(abs(a[AutumnalEquinox])>tol[1],asin(x[AutumnalEquinox])/rad,NA)
+  lat2[VernalEquinox] <- ifelse(abs(a[VernalEquinox])>tol[2],asin(x[VernalEquinox])/rad,NA)
+  }else{
+  lat2 <- ifelse(abs(a)>tol,asin(x)/rad,NA)}
 
   ## Average latitudes
   cbind(lon=lon,lat=rowMeans(cbind(lat1,lat2),na.rm=TRUE))
