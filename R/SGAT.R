@@ -557,6 +557,10 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
   date.ss <- as.POSIXct(tset,origin = "1970-01-01",tz = "GMT")
   mon.sr <- format(date.sr,"%b")
   mon.ss <- format(date.ss,"%b")
+  
+  AutumnalEquinox <- c("Jul","Aug","Sep","Oct","Nov")
+  VernalEquinox <- c("Jan","Feb","Mar","Apr","May")
+  
   rad <- pi/180
   sr <- solar(trise)
   ss <- solar(tset)
@@ -569,26 +573,24 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
   a <- sr$sinSolarDec
   b <- sr$cosSolarDec*cos(rad*hourAngle)
   x <- (a*cosz-sign(a)*b*suppressWarnings(sqrt(a^2+b^2-cosz^2)))/(a^2+b^2)
-  if(length(tol) == 2){
-  AutumnalEquinox <- mon.sr %in% c("Jul","Aug","Sep","Oct","Nov")
-  VernalEquinox <- mon.sr %in% c("Jan","Feb","Mar","Apr","May")
-  lat1[AutumnalEquinox] <- ifelse(abs(a[AutumnalEquinox])>tol[1],asin(x[AutumnalEquinox])/rad,NA)
-  lat1[VernalEquinox] <- ifelse(abs(a[VernalEquinox])>tol[2],asin(x[VernalEquinox])/rad,NA)
-  }else{
-  lat1 <- ifelse(abs(a)>tol,asin(x)/rad,NA)} 
+
+  lat1 <- rep(NA,length(a))
+  for(i in 1:length(a)){
+  lat1[i] <- if(mon.sr[i] %in% AutumnalEquinox){ifelse(abs(a[i])>tol[1],asin(x)/rad,NA)}
+  lat1[i] <- if(mon.sr[i] %in% VernalEquinox){ifelse(abs(a[i])>tol[2],asin(x)/rad,NA)}
+  }
 
   ## Compute latitude from sunset
   hourAngle <- ss$solarTime+lon-180
   a <- ss$sinSolarDec
   b <- ss$cosSolarDec*cos(rad*hourAngle)
   x <- (a*cosz-sign(a)*b*suppressWarnings(sqrt(a^2+b^2-cosz^2)))/(a^2+b^2)
-  if(length(tol) == 2){
-  AutumnalEquinox <- mon.sr %in% c("Jul","Aug","Sep","Oct","Nov")
-  VernalEquinox <- mon.sr %in% c("Jan","Feb","Mar","Apr","May")
-  lat2[AutumnalEquinox] <- ifelse(abs(a[AutumnalEquinox])>tol[1],asin(x[AutumnalEquinox])/rad,NA)
-  lat2[VernalEquinox] <- ifelse(abs(a[VernalEquinox])>tol[2],asin(x[VernalEquinox])/rad,NA)
-  }else{
-  lat2 <- ifelse(abs(a)>tol,asin(x)/rad,NA)}
+  
+  lat2 <- rep(NA,length(a))
+  for(i in 1:length(a)){
+  lat2[i] <- if(mon.ss[i] %in% AutumnalEquinox){ifelse(abs(a[i])>tol[1],asin(x)/rad,NA)}
+  lat2[i] <- if(mon.ss[i] %in% VernalEquinox){ifelse(abs(a[i])>tol[2],asin(x)/rad,NA)}
+  }
 
   ## Average latitudes
   cbind(lon=lon,lat=rowMeans(cbind(lat1,lat2),na.rm=TRUE))
