@@ -558,8 +558,8 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
   mon.sr <- format(date.sr,"%b")
   mon.ss <- format(date.ss,"%b")
   
-  AutumnalEquinox <- c("Jul","Aug","Sep","Oct","Nov")
-  VernalEquinox <- c("Jan","Feb","Mar","Apr","May")
+  AutumnalEquinox <- c("Aug","Sep","Oct")
+  VernalEquinox <- c("Feb","Mar","Apr")
   
   rad <- pi/180
   sr <- solar(trise)
@@ -576,7 +576,8 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
 
   lat1 <- rep(NA,length(a))
   for(i in 1:length(a)){
-  lat1[i] <- if(mon.sr[i] %in% AutumnalEquinox){ifelse(abs(a[i])>tol[1],asin(x[i])/rad,NA)}else{ifelse(abs(a[i])>tol[2],asin(x[i])/rad,NA)}
+  lat1[i] <- if(mon.sr[i] %in% AutumnalEquinox){ifelse(abs(a[i])>tol[1],asin(x[i])/rad,NA)}
+  lat1[i] <- if(mon.sr[i] %in% VernalEquinox){ifelse(abs(a[i])>tol[2],asin(x[i])/rad,NA)}
   }
 
   ## Compute latitude from sunset
@@ -587,7 +588,8 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
   
   lat2 <- rep(NA,length(a))
   for(i in 1:length(a)){
-  lat2[i] <- if(mon.ss[i] %in% AutumnalEquinox){ifelse(abs(a[i])>tol[1],asin(x[i])/rad,NA)}else{ifelse(abs(a[i])>tol[2],asin(x[i])/rad,NA)}
+  lat2[i] <- if(mon.ss[i] %in% AutumnalEquinox){ifelse(abs(a[i])>tol[1],asin(x[i])/rad,NA)}
+  lat2[i] <- if(mon.ss[i] %in% VernalEquinox){ifelse(abs(a[i])>tol[2],asin(x[i])/rad,NA)}
   }
 
   ## Average latitudes
