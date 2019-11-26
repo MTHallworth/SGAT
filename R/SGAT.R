@@ -593,7 +593,7 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
   }
 
   ## Average latitudes
-  cbind(lon=lon,lat=rowMeans(cbind(lat1,lat2),na.rm=TRUE))
+  cbind(lon=lon,lat=apply(cbind(lat1,lat2),1,mean,na.rm=TRUE))
 }
 
 
