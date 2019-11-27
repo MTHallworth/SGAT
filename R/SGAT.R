@@ -552,7 +552,7 @@ twilightPairs <- function(twilight,rise) {
 ##' \item{\code{x}}{a two column matrix of (lon,lat) locations.}
 ##' @seealso \code{\link{zenith}}
 ##' @export
-thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
+thresholdEstimate <- function(trise,tset,zenith=96,tol=0) {
   date.sr <- as.POSIXct(trise,origin = "1970-01-01",tz = "GMT")
   date.ss <- as.POSIXct(tset,origin = "1970-01-01",tz = "GMT")
   mon.sr <- format(date.sr,"%b")
@@ -574,25 +574,31 @@ thresholdEstimate <- function(trise,tset,zenith=96,tol=c(0,0)) {
   b <- sr$cosSolarDec*cos(rad*hourAngle)
   x <- (a*cosz-sign(a)*b*suppressWarnings(sqrt(a^2+b^2-cosz^2)))/(a^2+b^2)
   
+  if(length(tol)>1){
   lat1 <- asin(x)/rad 
   for(i in 1:length(lat1)){
-  lat1[i] <- ifelse(mon.sr[i] %in% AutumnalEquinox & abs(a[i]) > tol[1], asin(x[i])/rad, NA)
-  lat1[i] <- ifelse(mon.sr[i] %in% VernalEquinox & abs(a[i]) > tol[2], asin(x[i])/rad, NA)
+  #lat1[i] <- ifelse(mon.sr[i] %in% AutumnalEquinox & abs(a[i]) > tol[1], asin(x[i])/rad, NA)
+  #lat1[i] <- ifelse(mon.sr[i] %in% VernalEquinox & abs(a[i]) > tol[2], asin(x[i])/rad, NA)
+  lat1[i] <- ifelse(abs(a[i]) > tol[ifelse(mon.sr[i] %in% AutumnalEquinox,1,2)],asin(x[i])/rad,NA) 
   }
   lat1[lat1 == "NaN"] <- NA
-
+  }else{lat1 <- ifelse(abs(a)>tol,asin(x)/rad,NA)}
+  
   ## Compute latitude from sunset
   hourAngle <- ss$solarTime+lon-180
   a <- ss$sinSolarDec
   b <- ss$cosSolarDec*cos(rad*hourAngle)
   x <- (a*cosz-sign(a)*b*suppressWarnings(sqrt(a^2+b^2-cosz^2)))/(a^2+b^2)
   
+  if(length(tol)>1){
   lat2 <- asin(x)/rad 
   for(i in 1:length(lat2)){
-  lat2[i] <- ifelse(mon.ss[i] %in% AutumnalEquinox & abs(a[i]) > tol[1], asin(x[i])/rad, NA)
-  lat2[i] <- ifelse(mon.ss[i] %in% VernalEquinox & abs(a[i]) > tol[2], asin(x[i])/rad, NA)
+  #lat2[i] <- ifelse(mon.ss[i] %in% AutumnalEquinox & abs(a[i]) > tol[1], asin(x[i])/rad, NA)
+  #lat2[i] <- ifelse(mon.ss[i] %in% VernalEquinox & abs(a[i]) > tol[2], asin(x[i])/rad, NA)
+  lat2[i] <- ifelse(abs(a[i]) > tol[ifelse(mon.ss[i] %in% AutumnalEquinox,1,2)],asin(x[i])/rad,NA) 
   }
   lat2[lat2 == "NaN"] <- NA
+  }else{lat2 <- ifelse(abs(a)>tol,asin(x)/rad,NA)}
   
   ## Average latitudes
   cbind(lon=lon,lat=rowMeans(cbind(lat1,lat2),na.rm=TRUE))
